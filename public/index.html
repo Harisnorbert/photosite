@@ -70,7 +70,7 @@
       class="uc-light"
     ></uc-file-uploader-regular>
     <uc-upload-ctx-provider ctx-name="my-uploader"></uc-upload-ctx-provider>
-
+    <button id="downloadAll" class="button-link">⬇️ Download All</button>
     <h2>📂 Gallery</h2>
     <div id="gallery" class="gallery-grid"></div>
   </div>
@@ -99,6 +99,23 @@
       .catch(err => console.error('Gallery fetch error:', err));
   }
 
+  document.addEventListener('DOMContentLoaded', () => {
+    refreshGallery();
+
+    // hook up the download-all button
+    document.getElementById('downloadAll').addEventListener('click', async () => {
+      const resp = await fetch('/.netlify/functions/createArchive', { method: 'POST' });
+      if (!resp.ok) return alert('Failed to make archive');
+      const { archiveUrl } = await resp.json();
+      // redirect browser to the ZIP
+      window.location.href = archiveUrl;
+    });
+
+    // uploader hook (no changes from before)
+    const uploader = document.querySelector('uc-file-uploader-regular');
+    uploader.addEventListener('upload-complete', () => refreshGallery());
+  });
+  
   document.addEventListener('DOMContentLoaded', () => {
     // 2. Initial load
     refreshGallery();
