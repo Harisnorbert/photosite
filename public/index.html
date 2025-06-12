@@ -1,0 +1,110 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Photo Uploader & Gallery</title>
+  <!-- Uploadcare Stylesheet -->
+  <link
+    rel="stylesheet"
+    href="https://cdn.jsdelivr.net/npm/@uploadcare/file-uploader@1/web/uc-file-uploader-regular.min.css"
+  />
+  <!-- Uploadcare Widget Script -->
+  <script type="module">
+    import * as UC from 'https://cdn.jsdelivr.net/npm/@uploadcare/file-uploader@1/web/uc-file-uploader-regular.min.js';
+    UC.defineComponents(UC);
+  </script>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      padding: 2rem;
+      text-align: center;
+      background: #f9f9f9;
+    }
+    .container {
+      max-width: 800px;
+      margin: 0 auto;
+      background: #fff;
+      padding: 2rem;
+      border-radius: 8px;
+      box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+    }
+    .gallery-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, 150px);
+      gap: 8px;
+      justify-content: center;
+      margin-top: 1rem;
+    }
+    .gallery-grid img {
+      width: 150px;
+      height: 150px;
+      object-fit: cover;
+      border-radius: 4px;
+    }
+    .button-link {
+      display: inline-block;
+      margin: 1rem;
+      padding: 0.75rem 1.5rem;
+      background: #007EE5;
+      color: white;
+      border-radius: 5px;
+      text-decoration: none;
+      font-size: 1rem;
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <h1>📤 Photo Upload</h1>
+    <p>Use the widget below to upload your photos:</p>
+
+    <uc-config
+      ctx-name="my-uploader"
+      source-list="local, camera"
+      files-view-mode="grid"
+      pubkey="dc8e483f82bfd3984bf4"
+    ></uc-config>
+    <uc-file-uploader-regular
+      ctx-name="my-uploader"
+      class="uc-light"
+    ></uc-file-uploader-regular>
+    <uc-upload-ctx-provider ctx-name="my-uploader"></uc-upload-ctx-provider>
+
+    <h2>📂 Gallery</h2>
+    <div id="gallery" class="gallery-grid"></div>
+  </div>
+
+  <script>
+    // Fetch and render the gallery from Netlify function
+    function refreshGallery() {
+      fetch('/.netlify/functions/listFiles')
+        .then(res => res.json())
+        .then(data => {
+          const gallery = document.getElementById('gallery');
+          gallery.innerHTML = '';
+          data.files.forEach(file => {
+            const link = document.createElement('a');
+            link.href = file.originalUrl;
+            link.target = '_blank';
+
+            const img = document.createElement('img');
+            img.src = file.thumbnailUrl;
+            img.alt = file.uuid;
+
+            link.appendChild(img);
+            gallery.appendChild(link);
+          });
+        });
+    }
+
+    // After upload, optionally refresh gallery
+    uploadcare.Widget('[role=uploadcare-uploader]')
+      .onUploadComplete(info => {
+        refreshGallery();
+      });
+
+    document.addEventListener('DOMContentLoaded', refreshGallery);
+  </script>
+</body>
+</html>
