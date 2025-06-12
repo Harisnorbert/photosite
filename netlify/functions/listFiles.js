@@ -24,7 +24,7 @@ exports.handler = async () => {
   const files = payload.results.map(f => ({
     uuid: f.uuid,
     originalUrl: f.original_file_url,
-    thumbnailUrl: `${f.cdn_url}/-/resize/200x200/`,
+    thumbnailUrl: f.cdn_url.replace(/\/$/, '') + '/-/resize/200x200/',
   }));
 
   return {
